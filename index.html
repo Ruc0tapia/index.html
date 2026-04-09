@@ -97,6 +97,9 @@
         .btn-trunk { grid-column: span 2; border-color: rgba(255, 61, 0, 0.3); }
         .btn-trunk:active { background-color: rgba(255, 61, 0, 0.1); border-color: var(--accent-red); }
 
+        .btn-power-off { grid-column: span 2; border-color: rgba(255, 59, 48, 0.5); color: #ff3b30; margin-top: 10px; }
+        .btn-power-off:active { background-color: rgba(255, 59, 48, 0.1); border-color: #ff3b30; }
+
         .section-title {
             grid-column: span 2;
             text-align: left;
@@ -139,6 +142,10 @@
 
         <button class="control-btn btn-trunk" onclick="sendCommand('TRUNK')">
             <span class="btn-icon">🔓</span> Open Trunk
+        </button>
+
+        <button class="control-btn btn-power-off" onclick="confirmPowerOff()">
+            <span class="btn-icon">🛑</span> Power Off Motorcycle
         </button>
     </div>
 
@@ -215,21 +222,26 @@
             }
 
             try {
-                // Convert the text string into a byte array for BLE transmission
                 let encoder = new TextEncoder();
                 let commandData = encoder.encode(commandText);
                 
                 await rxCharacteristic.writeValue(commandData);
                 console.log("Command Sent: ", commandText);
                 
-                // Little visual feedback on the status bar
                 let oldText = statusMessage.innerText;
                 statusMessage.innerText = `Command Sent: ${commandText}`;
-                setTimeout(() => { if(bleDevice.gatt.connected) statusMessage.innerText = oldText; }, 1000);
+                setTimeout(() => { if(bleDevice && bleDevice.gatt.connected) statusMessage.innerText = oldText; }, 1000);
 
             } catch (error) {
                 console.error("Write Error:", error);
                 statusMessage.innerText = "Error sending command!";
+            }
+        }
+
+        // NEW SHUTDOWN CONFIRMATION FUNCTION
+        function confirmPowerOff() {
+            if (confirm("SECURITY ALERT: Are you sure you want to completely shut down the 72V system and arm the alarm?")) {
+                sendCommand("POWER_OFF");
             }
         }
     </script>
