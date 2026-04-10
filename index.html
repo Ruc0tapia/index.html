@@ -153,6 +153,18 @@
         const SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase();
         const RX_CHAR_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E".toLowerCase();
 
+        // --- NEW: THE DIGITAL ID BADGE ---
+        let userName = localStorage.getItem("blindmaster_user");
+        if (!userName) {
+            // First time opening the app! Ask for identity.
+            let input = prompt("Welcome to BlindMaster OS.\nWho owns this phone? (Type ADRIAN or RUBEN)");
+            if (input) {
+                userName = input.trim().toUpperCase();
+                localStorage.setItem("blindmaster_user", userName);
+            } else {
+                userName = "GUEST"; // Fallback
+            }
+        }
         let bleDevice = null;
         let rxCharacteristic = null;
 
@@ -195,6 +207,14 @@
                 
                 // Unlock the UI
                 dashboard.classList.add('active');
+
+                // --- NEW: THE SILENT HANDSHAKE ---
+                // Wait 500ms for the BLE connection to settle, then whisper the ID to the bike
+                setTimeout(() => {
+                    if (userName === "ADRIAN" || userName === "RUBEN") {
+                        sendCommand("USER_" + userName);
+                    }
+                }, 500);
 
             } catch (error) {
                 console.error("BLE Error:", error);
