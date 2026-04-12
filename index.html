@@ -177,11 +177,18 @@
                 const server = await bleDevice.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 rxChar = await service.getCharacteristic(RX_CHAR_UUID);
-                
+
                 statusMsg.innerText = "LINK ESTABLISHED";
                 statusMsg.classList.add('connected-text');
                 connectBtn.innerText = "TERMINATE UPLINK";
                 dash.classList.add('active');
+
+                // SYNC TIME TO MOTORCYCLE
+                const now = new Date();
+                const h = now.getHours().toString().padStart(2, '0');
+                const m = now.getMinutes().toString().padStart(2, '0');
+                const s = now.getSeconds().toString().padStart(2, '0');
+                sendCommand("TIME:" + h + m + s);
             } catch (e) {
                 statusMsg.innerText = "LINK FAILED";
                 console.error(e);
