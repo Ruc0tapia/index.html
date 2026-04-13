@@ -75,17 +75,31 @@
 
         .btn-horn { background: #332211; border-color: #554422; grid-column: span 2; padding: 25px; }
         .btn-horn:active { background: var(--accent-amber); color: black; }
+ 
+        /* USER REGISTRY STYLES */
+        .user-selector { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; max-width: 400px; }
+        .user-chip { 
+            flex: 1; background: #1a1a1a; border: 1px solid #333; color: #666; 
+            padding: 12px; border-radius: 12px; font-size: 11px; font-weight: 800; 
+            cursor: pointer; text-align: center; transition: all 0.2s;
+        }
+        .user-chip.active { background: #222; border-color: var(--accent-blue); color: var(--accent-blue); }
     </style>
 </head>
 <body>
-
+ 
     <header>
         <h1 style="font-size: 20px; letter-spacing: 3px;">BLINDMASTER CORE</h1>
         <div id="statusMessage">LINK OFFLINE</div>
     </header>
-
+ 
+    <div class="user-selector" id="userSelector">
+        <div class="user-chip" id="chip-ADRIAN" onclick="setUser('ADRIAN')">ADRIAN</div>
+        <div class="user-chip" id="chip-RUBEN" onclick="setUser('RUBEN')">RUBEN</div>
+    </div>
+ 
     <button id="connectBtn">ESTABLISH UPLINK</button>
-
+ 
     <div class="dashboard" id="dashboard">
         
         <!-- DRIVE MODES -->
@@ -189,12 +203,34 @@
                 const m = now.getMinutes().toString().padStart(2, '0');
                 const s = now.getSeconds().toString().padStart(2, '0');
                 sendCommand("TIME:" + h + m + s);
+ 
+                // AUTO-SEND USER GREETING
+                setTimeout(() => {
+                    const currentUser = localStorage.getItem('bm_user') || 'ADRIAN';
+                    sendCommand("USER_" + currentUser);
+                }, 500); // Small delay to let time sync settle
             } catch (e) {
                 statusMsg.innerText = "LINK FAILED";
                 console.error(e);
             }
         });
-
+ 
+        // --- USER IDENTITY LOGIC ---
+        function setUser(user) {
+            localStorage.setItem('bm_user', user);
+            updateUserUI();
+        }
+ 
+        function updateUserUI() {
+            const current = localStorage.getItem('bm_user') || 'ADRIAN';
+            document.querySelectorAll('.user-chip').forEach(c => c.classList.remove('active'));
+            const chip = document.getElementById('chip-' + current);
+            if (chip) chip.classList.add('active');
+        }
+ 
+        // Initial Load
+        updateUserUI();
+ 
         function onDisconnected() {
             statusMsg.innerText = "LINK OFFLINE";
             statusMsg.classList.remove('connected-text');
